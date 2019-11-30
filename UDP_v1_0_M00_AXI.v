@@ -31,7 +31,9 @@
 	)
 	(
 		// Users to add ports here
-
+		input slv_aclk,
+		input [C_M_AXI_DATA_WIDTH-1:0] reg0_i,
+		input wren_i,
 		// User ports ends
 		// Do not modify the ports beyond this line
 
@@ -155,7 +157,14 @@
 		output wire  M_AXI_RREADY
 	);
     
-    checkreg checkreg(  // 50MHzto125MHz
+    check_reg # (
+		.DATA_WIDTH(C_M_AXI_DATA_WIDTH)
+	) check_reg (  // 50MHzto125MHz
+		.s_aclk(slv_aclk),
+		.m_aclk(M_AXI_ACLK),
+		.data(reg0_i),
+		.wren(wren_i),
+		.start_udp_o()
     );
     
     TOP TOP(

@@ -15,7 +15,8 @@
 	)
 	(
 		// Users to add ports here
-
+		output [C_S_AXI_ADDR_WIDTH-1 : 0] reg0_o,
+		output wren_o,
 		// User ports ends
 		// Do not modify the ports beyond this line
 
@@ -398,7 +399,8 @@
 	end    
 
 	// Add user logic here
-
+	assign reg0_o = slv_reg0;
+	assign wren_o = slv_reg_wren;
 	// User logic ends
 
 	endmodule
