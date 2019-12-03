@@ -4,7 +4,7 @@
 	module UDP_v1_0 #
 	(
 		// Users to add parameters here
-
+        
 		// User parameters ends
 		// Do not modify the parameters beyond this line
 
@@ -27,7 +27,18 @@
 	)
 	(
 		// Users to add ports here
-
+		input [0:0]   gmii_rx_en,
+		input [0:0]   gmii_rx_er,
+		input [7:0]   gmii_rxd,
+		output        gmii_col,// 半2重のみ
+		output        gmii_crs,// 半2重のみ
+		output        gmii_tx_clk,
+		output        gmii_tx_dv,
+		output        gmii_tx_er,
+        output        gmii_rx_clk,
+		output [7:0]  gmii_txd,
+		output        PHYRSTB,         
+		input         locked,     
 		// User ports ends
 		// Do not modify the ports beyond this line
 
@@ -139,7 +150,8 @@ wire wren;
 		.S_AXI_RVALID(s00_axi_rvalid),
 		.S_AXI_RREADY(s00_axi_rready)
 	);
-
+    wire ETH_RXCTL;
+    wire ETH_TXCTL;
 // Instantiation of Axi Bus Interface M00_AXI
 	UDP_v1_0_M00_AXI # ( 
 		.C_M_TARGET_SLAVE_BASE_ADDR(C_M00_AXI_TARGET_SLAVE_BASE_ADDR),
@@ -157,6 +169,11 @@ wire wren;
 		.slv_aclk(s00_axi_aclk),
 		.reg0_i(reg0),
 		.wren_i(wren),
+		.locked(locked),
+        .ETH_RXD(gmii_rxd),
+        .ETH_RXCTL(ETH_RXCTL),
+        .ETH_TXD(gmii_txd),
+        .ETH_TXCTL(ETH_TXCTL),
 		// user ports end
 		.INIT_AXI_TXN(m00_axi_init_axi_txn),
 		.TXN_DONE(m00_axi_txn_done),
@@ -208,7 +225,14 @@ wire wren;
 	);
 
 	// Add user logic here
-
+    assign PHYRSTB = 1'b1;
+    assign ETH_RXCTL = gmii_rx_en;
+    assign gmii_col = ETH_TXCTL;// 半2重のみ
+    assign gmii_crs = ETH_TXCTL;// 半2重のみ
+    assign gmii_tx_clk = m00_axi_aclk;
+    assign gmii_tx_dv = ETH_TXCTL;
+    assign gmii_tx_er = 1'b0;
+    assign gmii_rx_clk = m00_axi_aclk;
 	// User logic ends
 
 	endmodule

@@ -34,6 +34,13 @@
 		input slv_aclk,
 		input [C_M_AXI_DATA_WIDTH-1:0] reg0_i,
 		input wren_i,
+		input locked,
+        input [7:0]     ETH_RXD,     // 受信フレームデータ
+        input           ETH_RXCTL,   // 受信フレーム検知で'1'
+        
+        output [7:0]    ETH_TXD,    //-- Ether RGMII Tx data.
+        output          ETH_TXCTL,
+		
 		// User ports ends
 		// Do not modify the ports beyond this line
 
@@ -156,7 +163,10 @@
     // accept the read data and response information.
 		output wire  M_AXI_RREADY
 	);
-    
+    wire start_udp;
+    wire [3:0] host;
+    wire [3:0] dst;
+    wire [3:0] packet;
     check_reg # (
 		.DATA_WIDTH(C_M_AXI_DATA_WIDTH)
 	) check_reg (  // 50MHzto125MHz
@@ -164,10 +174,58 @@
 		.m_aclk(M_AXI_ACLK),
 		.data(reg0_i),
 		.wren(wren_i),
-		.start_udp_o()
+		.start_udp_o(start_udp),
+		.host(host),
+        .dst(dst),
+        .packet(packet)
     );
-    
+    /* FlgによってUDP送信 */
     TOP TOP(
+        .locked(locked),
+        .ETH_CLK(M_AXI_ACLK),
+        .ETH_RXD(ETH_RXD),     // 受信フレームデータ
+        .ETH_RXCTL(ETH_RXCTL),   // 受信フレーム検知で'1'
+        .ETH_TXD(ETH_TXD),    //-- Ether RGMII Tx data.
+        .ETH_TXCTL(ETH_TXCTL),
+        .start_udp_i(start_udp),
+        .host_i(host),
+        .dst_i(dst),
+        .packet_i(packet),
+        .M_AXI_AWID(M_AXI_AWID),
+        .M_AXI_AWADDR(M_AXI_AWADDR),
+        .M_AXI_AWLEN(M_AXI_AWLEN),
+        .M_AXI_AWSIZE(M_AXI_AWSIZE),
+        .M_AXI_AWBURST(M_AXI_AWBURST),
+        .M_AXI_AWLOCK(M_AXI_AWLOCK),
+        .M_AXI_AWCACHE(M_AXI_AWCACHE),
+        .M_AXI_AWPROT(M_AXI_AWPROT),
+        .M_AXI_AWQOS(M_AXI_AWQOS),
+        .M_AXI_AWVALID(M_AXI_AWVALID),
+        .M_AXI_AWREADY(M_AXI_AWREADY),
+        .M_AXI_WDATA(M_AXI_WDATA),
+        .M_AXI_WSTRB(M_AXI_WSTRB),
+        .M_AXI_WLAST(M_AXI_WLAST),
+        .M_AXI_WVALID(M_AXI_WVALID),
+        .M_AXI_WREADY(M_AXI_WREADY),
+        .M_AXI_BRESP(M_AXI_BRESP),
+        .M_AXI_BVALID(M_AXI_BVALID),
+        .M_AXI_BREADY(M_AXI_BREADY),
+        .M_AXI_ARID(M_AXI_ARID),
+        .M_AXI_ARADDR(M_AXI_ARADDR),
+        .M_AXI_ARLEN(M_AXI_ARLEN),
+        .M_AXI_ARSIZE(M_AXI_ARSIZE),
+        .M_AXI_ARBURST(M_AXI_ARBURST),
+        .M_AXI_ARLOCK(M_AXI_ARLOCK),
+        .M_AXI_ARCACHE(M_AXI_ARCACHE),
+        .M_AXI_ARPROT(M_AXI_ARPROT),
+        .M_AXI_ARQOS(M_AXI_ARQOS),
+        .M_AXI_ARVALID(M_AXI_ARVALID),
+        .M_AXI_ARREADY(M_AXI_ARREADY),
+        .M_AXI_RDATA(M_AXI_RDATA),
+        .M_AXI_RRESP(M_AXI_RRESP),
+        .M_AXI_RLAST(M_AXI_RLAST),
+        .M_AXI_RVALID(M_AXI_RVALID),
+        .M_AXI_RREADY(M_AXI_RREADY)
     );
 
 	endmodule
